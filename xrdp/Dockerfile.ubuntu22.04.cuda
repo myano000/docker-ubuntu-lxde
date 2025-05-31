@@ -63,6 +63,20 @@ RUN echo "alias code='DONT_PROMPT_WSL_INSTALL=1 code --no-sandbox --user-data-di
 COPY --from=build \
     /opt/su-exec/su-exec /usr/sbin/su-exec
 
+# Install Firefox
+RUN apt-get update \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    software-properties-common \
+    && add-apt-repository ppa:mozillateam/ppa \
+    && echo 'Package: *\nPin: release o=LP-PPA-mozillateam\nPin-Priority: 1001' > /etc/apt/preferences.d/mozilla-firefox \
+    && apt-get update \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y --allow-downgrades \
+    firefox \
+    xul-ext-ubufox \
+    && apt-get clean \
+    && rm -rf /var/cache/apt/archives/* \
+    && rm -rf /var/lib/apt/lists/*
+
 # Set locale
 RUN cp /usr/share/zoneinfo/Asia/Tokyo /etc/localtime \
     && echo 'Asia/Tokyo' > /etc/timezone
