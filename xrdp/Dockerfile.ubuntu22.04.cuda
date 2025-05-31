@@ -77,6 +77,34 @@ RUN apt-get update \
     && rm -rf /var/cache/apt/archives/* \
     && rm -rf /var/lib/apt/lists/*
 
+# Install Blender
+RUN apt-get update \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    blender \
+    python3-pip \
+    && apt-get clean \
+    && rm -rf /var/cache/apt/archives/* \
+    && rm -rf /var/lib/apt/lists/*
+
+# Configure keyboard shortcut for LXTerminal
+RUN mkdir -p /etc/xdg/lxde/openbox \
+    && echo '<?xml version="1.0" encoding="UTF-8"?>\n\
+<openbox_config xmlns="http://openbox.org/3.4/rc">\n\
+  <keyboard>\n\
+    <keybind key="C-A-t">\n\
+      <action name="Execute">\n\
+        <command>lxterminal</command>\n\
+      </action>\n\
+    </keybind>\n\
+  </keyboard>\n\
+</openbox_config>' > /etc/xdg/lxde/openbox/rc.xml \
+    && mkdir -p /etc/skel/.config/openbox \
+    && cp /etc/xdg/lxde/openbox/rc.xml /etc/skel/.config/openbox/lxde-rc.xml
+
+# Also update default LXDE session configuration
+RUN sed -i 's|<command>x-terminal-emulator</command>|<command>lxterminal</command>|g' /etc/xdg/lxde/openbox/lxde-rc.xml || true
+
+
 # Set locale
 RUN cp /usr/share/zoneinfo/Asia/Tokyo /etc/localtime \
     && echo 'Asia/Tokyo' > /etc/timezone
